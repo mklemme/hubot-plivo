@@ -1,0 +1,23 @@
+{
+  "name": "hubot-plivo",
+  "version": "1.0.0",
+  "description": "A Plivo adapter for Hubot.",
+  "main": "src/plivo.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sprk-platform/hubot-plivo.git"
+  },
+  "keywords": [
+    "hubot",
+    "plivo"
+  ],
+  "author": "Myk Klemme",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sprk-platform/hubot-plivo/issues"
+  },
+  "homepage": "https://github.com/sprk-platform/hubot-plivo#readme"
+}
