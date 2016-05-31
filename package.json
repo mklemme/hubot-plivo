@@ -21,9 +21,10 @@
   },
   "homepage": "https://github.com/sprk-platform/hubot-plivo#readme",
   "dependencies": {
+    "parent-require": "^1.0.0"
   },
   "peerDependencies": {
-    "hubot": ">=2.0"
+    "hubot": "latest"
   },
   "devDependencies": {
     "coffee-script": ">=1.2.0"

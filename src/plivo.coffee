@@ -1,15 +1,17 @@
-
-
-{Robot, Adapter, TextMessage}   = require("hubot")
+try
+  {Robot,Adapter,TextMessage,User} = require 'hubot'
+catch
+  prequire = require('parent-require')
+  {Robot,Adapter,TextMessage,User} = prequire 'hubot'
 
 HTTP    = require "http"
 QS      = require "querystring"
 
 class Plivo extends Adapter
   constructor: (robot) ->
-    @sid   = process.env.HUBOT_SMS_SID
-    @token = process.env.HUBOT_SMS_TOKEN
-    @from  = process.env.HUBOT_SMS_FROM
+    @sid   = process.env.HUBOT_PLIVO_AUTH_ID
+    @token = process.env.HUBOT_PLIVO_AUTH_TOKEN
+    @from  = process.env.HUBOT_PLIVO_FROM
     @robot = robot
     super robot
 
@@ -31,12 +33,11 @@ class Plivo extends Adapter
     self = @
 
     @robot.router.post "/hubot/sms", (request, response) =>
-      console.log response
-      payload = QS.parse(request.url)
-      console.log payload
+      message = request.body.Text
+      from = request.body.From
 
-      if payload.Body? and payload.From?
-        @receive_sms(payload.Body.trim(), payload.From)
+      if from? and message?
+        @receive_sms(message, from)
 
       response.writeHead 200, 'Content-Type': 'text/plain'
       response.end()
@@ -54,12 +55,16 @@ class Plivo extends Adapter
       message = message.substring(0, 1582) + "...(msg too long)"
 
     auth = new Buffer(@sid + ':' + @token).toString("base64")
-    data = QS.stringify From: @from, To: to, Body: message
+    # data = QS.stringify From: @from, To: to, Body: message
+    data = JSON.stringify({
+        src: @from,
+        dst: to,
+        text: message
+      })
 
-    @robot.http("https://api.twilio.com")
-      .path("/2010-04-01/Accounts/#{@sid}/Messages.json")
-      .header("Authorization", "Basic #{auth}")
-      .header("Content-Type", "application/x-www-form-urlencoded")
+    @robot.http("https://api.plivo.com")
+      .path("/v1/Account/" + @sid + "/Message/")
+      .header("Content-Type", "application/json")
       .post(data) (err, res, body) ->
         if err
           callback err
@@ -73,4 +78,4 @@ class Plivo extends Adapter
 exports.Plivo = Plivo
 
 exports.use = (robot) ->
-  new Twilio robot
+  new Plivo robot
