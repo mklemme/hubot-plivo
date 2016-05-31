@@ -19,5 +19,13 @@
   "bugs": {
     "url": "https://github.com/sprk-platform/hubot-plivo/issues"
   },
-  "homepage": "https://github.com/sprk-platform/hubot-plivo#readme"
+  "homepage": "https://github.com/sprk-platform/hubot-plivo#readme",
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "hubot": ">=2.0"
+  },
+  "devDependencies": {
+    "coffee-script": ">=1.2.0"
+  }
 }
