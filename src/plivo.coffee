@@ -62,15 +62,26 @@ class Plivo extends Adapter
         @receive_sms(message, from)
 
         @robot.emit "sms:received", {
-          from      : from,
-          to        : to,
-          message   : body,
-          user      : user
+          from : from,
+          to: to,
+          message: message,
+          user: user
         }
 
       response.writeHead 200, 'Content-Type': 'text/plain'
       response.end()
 
+    @robot.router.post "/hubot/sms/webhook", (request, response) =>
+      message = request.body.message
+      error = request.body.error
+
+      if message?
+        console.log message
+      if error?
+        console.log error
+
+      response.writeHead 200, 'Content-Type': 'text/plain'
+      response.end()
 
     self.emit "connected"
 
@@ -88,7 +99,8 @@ class Plivo extends Adapter
     data = JSON.stringify({
         src: @from,
         dst: to,
-        text: message
+        text: message,
+        url: req.protocol + '://' + req.get('host') + "/hubot/sms/webhook/"
       })
 
     authHeader = 'Basic ' + new Buffer(@sid + ':' + @token)
@@ -102,12 +114,14 @@ class Plivo extends Adapter
       .post(data) (err, res, body) ->
         if err
           callback err
-        else if res.statusCode is 201
+        else if res.statusCode is 202
           json = JSON.parse(body)
           callback null, json
         else
           json = JSON.parse(body)
           callback json
+
+    user = @robot.brain.userForId to
 
     @robot.emit "sms:sent", {
       from: @from,
