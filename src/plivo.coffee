@@ -54,10 +54,6 @@ class Plivo extends Adapter
   run: ->
     self = @
 
-    sleep = (ms) ->
-      start = new Date().getTime()
-      continue while new Date().getTime() - start < ms
-
     @robot.router.post "/hubot/sms", (request, response) =>
       message = request.body.Text
       from = request.body.From
@@ -79,7 +75,6 @@ class Plivo extends Adapter
       response.end()
 
     @robot.router.post "/hubot/sms/webhook", (request, response) =>
-      console.log request
       message = request.body.message
       error = request.body.error
 
@@ -99,6 +94,10 @@ class Plivo extends Adapter
     @receive new TextMessage user, body, 'messageId'
 
   send_sms: (message, to, callback) ->
+
+    sleep = (ms) ->
+      start = new Date().getTime()
+      continue while new Date().getTime() - start < ms
 
     if message.length > 1600
       message = message.substring(0, 1582) + "...(msg too long)"
