@@ -1,6 +1,6 @@
 {
   "name": "hubot-plivo",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Plivo adapter for Hubot.",
   "main": "src/plivo.coffee",
   "scripts": {
