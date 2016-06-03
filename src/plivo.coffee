@@ -54,6 +54,10 @@ class Plivo extends Adapter
   run: ->
     self = @
 
+    sleep = (ms) ->
+      start = new Date().getTime()
+      continue while new Date().getTime() - start < ms
+
     @robot.router.post "/hubot/sms", (request, response) =>
       message = request.body.Text
       from = request.body.From
@@ -99,39 +103,48 @@ class Plivo extends Adapter
     if message.length > 1600
       message = message.substring(0, 1582) + "...(msg too long)"
 
-    data = JSON.stringify({
-        src: @from,
-        dst: to,
-        text: message,
-        url: process.env.HUBOT_BASE_URL + "/hubot/sms/webhook/"
-      })
-
-    authHeader = 'Basic ' + new Buffer(@sid + ':' + @token)
-      .toString('base64')
-
-    @robot.http("https://api.plivo.com")
-      .path("/v1/Account/" + @sid + "/Message/")
-      .header("Content-Type","application/json")
-      .header("Authorization", authHeader)
-      .header("User-Agent", "NodePlivo")
-      .post(data) (err, res, body) ->
-        if err
-          callback err
-        else if res.statusCode is 202
-          json = JSON.parse(body)
-          callback null, json
-        else
-          json = JSON.parse(body)
-          callback json
+    if message.length > 150
+      messages = message.match(new RegExp('.{1,' + 150 + '}', 'g'));
+    else
+      messages = [message]
 
     user = @robot.brain.userForId to
 
-    @robot.emit "sms:sent", {
-      from: @from,
-      to: to,
-      message: message,
-      user: user
-    }
+    for sms in messages
+
+      data = JSON.stringify({
+          src: @from,
+          dst: to,
+          text: sms,
+          url: process.env.HUBOT_BASE_URL + "/hubot/sms/webhook/"
+        })
+
+      authHeader = 'Basic ' + new Buffer(@sid + ':' + @token)
+        .toString('base64')
+
+      @robot.http("https://api.plivo.com")
+        .path("/v1/Account/" + @sid + "/Message/")
+        .header("Content-Type","application/json")
+        .header("Authorization", authHeader)
+        .header("User-Agent", "NodePlivo")
+        .post(data) (err, res, body) ->
+          if err
+            callback err
+          else if res.statusCode is 202
+            json = JSON.parse(body)
+            callback null, json
+          else
+            json = JSON.parse(body)
+            callback json
+
+      @robot.emit "sms:sent", {
+        from: @from,
+        to: to,
+        message: sms,
+        user: user
+      }
+
+      sleep 1000
 
 exports.Plivo = Plivo
 
