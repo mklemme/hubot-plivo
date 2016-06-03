@@ -75,6 +75,7 @@ class Plivo extends Adapter
       response.end()
 
     @robot.router.post "/hubot/sms/webhook", (request, response) =>
+      console.log request
       message = request.body.message
       error = request.body.error
 
