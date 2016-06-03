@@ -8,6 +8,7 @@
 #   HUBOT_PLIVO_AUTH_ID     | Your Plivo auth id
 #   HUBOT_PLIVO_AUTH_TOKEN  | Your Plivo auth token
 #   HUBOT_PLIVO_FROM        | Your purchased Plivo phone number
+#   HUBOT_BASE_URL          | Your base hubot url including the trailing slash
 #
 # Commands:
 #   hubot <trigger> - <what the respond trigger does>
@@ -58,8 +59,10 @@ class Plivo extends Adapter
       from = request.body.From
       to = request.body.To
 
+
       if from? and message?
-        @receive_sms(message, from)
+        user = @robot.brain.userForId from
+        @receive_sms(message, from, user)
 
         @robot.emit "sms:received", {
           from : from,
@@ -85,9 +88,8 @@ class Plivo extends Adapter
 
     self.emit "connected"
 
-  receive_sms: (body, from) ->
+  receive_sms: (body, from, user) ->
     return if body.length is 0
-    user = @robot.brain.userForId from
 
     @receive new TextMessage user, body, 'messageId'
 
@@ -100,7 +102,7 @@ class Plivo extends Adapter
         src: @from,
         dst: to,
         text: message,
-        url: req.protocol + '://' + req.get('host') + "/hubot/sms/webhook/"
+        url: process.env.HUBOT_BASE_URL + "/hubot/sms/webhook/"
       })
 
     authHeader = 'Basic ' + new Buffer(@sid + ':' + @token)
